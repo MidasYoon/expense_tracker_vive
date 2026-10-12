@@ -4,7 +4,7 @@
 
 ## 현재 상태
 
-만들기 전입니다. 아직 코드나 기능이 없고, README.md, AGENTS.md, DECISIONS.md, PLAN.md만 있습니다. 지금은 PLAN.md의 P-04(PRD.md 작성)를 진행하고 있습니다.
+만들기 전입니다. 아직 코드나 기능이 없고, README.md, AGENTS.md, DECISIONS.md, PLAN.md, PRD.md만 있습니다. 지금은 PLAN.md의 P-04(PRD.md 작성)를 진행하고 있습니다. PRD.md에는 요구사항 후보 정리와 후보 표가 있고, 모든 후보가 아직 "검토 필요"입니다.
 
 이 앱에는 AI 기능을 넣지 않습니다.
 
@@ -14,6 +14,7 @@
 - `AGENTS.md` — AI가 이 프로젝트에서 일할 때 지키는 작업 규칙입니다.
 - `DECISIONS.md` — 사람이 확정한 결정을 기록합니다.
 - `PLAN.md` — 이번 목표와 범위, 작업 목록과 진행 상태를 적습니다.
+- `PRD.md` — 첫 버전의 요구사항 후보와 검토 내용을 적습니다.
 
 ## 시작 방법
 
