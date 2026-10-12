@@ -4,7 +4,7 @@
 
 ## 현재 상태
 
-만들기 전입니다. 아직 코드나 기능이 없고, README.md, AGENTS.md, DECISIONS.md, PLAN.md, PRD.md만 있습니다. 지금은 PLAN.md의 P-04(PRD.md 작성)를 진행하고 있습니다. PRD.md에는 요구사항 후보 정리와 후보 표가 있고, 모든 후보가 아직 "검토 필요"입니다.
+만들기 전입니다. 아직 코드나 기능이 없고, README.md, AGENTS.md, DECISIONS.md, PLAN.md, PRD.md만 있습니다. PLAN.md의 P-04(PRD.md 작성)를 마쳤고, 첫 버전 기능 범위는 DECISIONS.md의 D-002로 정했습니다. 다음은 P-05(ARCHITECTURE.md 작성)입니다.
 
 이 앱에는 AI 기능을 넣지 않습니다.
 
