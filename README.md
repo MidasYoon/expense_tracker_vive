@@ -4,7 +4,7 @@
 
 ## 현재 상태
 
-만들기 전입니다. 아직 코드나 기능이 없고, README.md, AGENTS.md, DECISIONS.md, PLAN.md, PRD.md만 있습니다. PLAN.md의 P-04(PRD.md 작성)를 마쳤고, 첫 버전 기능 범위는 DECISIONS.md의 D-002로 정했습니다. 저장 방식, 본인 확인 방법, 화면 기술은 D-003~D-005로 정했습니다. 지금은 P-05(ARCHITECTURE.md 작성)를 진행하고 있습니다.
+만들기 전입니다. 아직 코드나 기능이 없고, README.md, AGENTS.md, DECISIONS.md, PLAN.md, PRD.md만 있습니다. PLAN.md의 P-04(PRD.md 작성)를 마쳤고, 첫 버전 기능 범위는 DECISIONS.md의 D-002로 정했습니다. 저장 방식, 본인 확인 방법, 화면 기술, 서버 기술, 데이터베이스는 D-003~D-007로 정했습니다. 지금은 P-05(ARCHITECTURE.md 작성)를 진행하고 있습니다.
 
 이 앱에는 AI 기능을 넣지 않습니다.
 
