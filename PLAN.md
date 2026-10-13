@@ -13,7 +13,8 @@
   - ARCHITECTURE.md — 있음 (승인됨)
   - SCREEN-SPEC.md — 있음 (승인됨)
   - DATA-MODEL.md — 있음 (승인됨)
-  - API-SPEC.md, TEST-PLAN.md — 아직 없음
+  - API-SPEC.md — 있음 (초안. 승인 전)
+  - TEST-PLAN.md — 아직 없음
 
 ## 작업 목록
 
