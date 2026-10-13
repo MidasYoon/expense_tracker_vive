@@ -51,7 +51,7 @@
 - AWS 안에서 서버를 올릴 서비스(EC2, Elastic Beanstalk 등)와 관리형 MySQL 서비스 이름
 - Java, Spring Boot, MySQL, Node.js 등의 버전
 - 로그인을 유지하는 방식(세션 또는 토큰) → API-SPEC.md
-- 비밀번호 규칙(길이 등) → DATA-MODEL.md
+- 비밀번호 규칙(길이 등): DATA-MODEL.md 9절로 정함
 - 재설정 링크의 유효 시간 → API-SPEC.md (R-028)
 - 개발 환경에서 메일을 다루는 방법 → TEST-PLAN.md (D-012)
 
