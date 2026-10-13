@@ -10,7 +10,7 @@
   - AGENTS.md — 있음
   - DECISIONS.md — 있음
   - PRD.md — 있음 (요구사항 후보 정리와 후보 표. 모든 후보의 판정을 마침)
-  - ARCHITECTURE.md — 있음
+  - ARCHITECTURE.md — 있음 (승인됨)
   - SCREEN-SPEC.md — 있음 (승인됨)
   - DATA-MODEL.md — 있음 (승인됨)
   - API-SPEC.md, TEST-PLAN.md — 아직 없음
@@ -44,7 +44,7 @@
 
 ## 남은 문제와 다음 행동
 
-아직 정하지 않은 것과, 이번에 정한 것입니다. 정하면 DECISIONS.md에 기록합니다.
+아직 정하지 않은 것과, 이번에 정한 것입니다. 큰 결정은 DECISIONS.md에, 문서 세부는 각 문서에 [AI 제안·채택]으로 기록합니다.
 
 - **첫 버전 기능 범위**: D-002로 정함 (PRD.md)
 - **사용할 기술**: 화면은 D-005(React + TypeScript), 서버는 D-006(Java + Spring Boot), 데이터베이스는 D-007(MySQL)로 정함.
