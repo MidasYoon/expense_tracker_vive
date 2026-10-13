@@ -4,7 +4,7 @@
 
 ## 현재 상태
 
-만들기 전입니다. 아직 코드나 기능이 없고, README.md, AGENTS.md, DECISIONS.md, PLAN.md, PRD.md, ARCHITECTURE.md, SCREEN-SPEC.md만 있습니다. PLAN.md의 P-04(PRD.md 작성)를 마쳤고, 첫 버전 기능 범위는 DECISIONS.md의 D-002와 D-011로 정했습니다. 저장 방식, 본인 확인 방법, 화면 기술, 서버 기술, 데이터베이스, 호스팅, 메일 발송은 D-003~D-012로 정했습니다. P-05(ARCHITECTURE.md 작성)를 마쳤습니다. P-06(SCREEN-SPEC.md 작성)을 마쳤습니다. 돈·날짜 규칙은 D-013, D-014로 정했습니다. 지금은 P-07(DATA-MODEL.md 작성)을 진행 중입니다.
+만들기 전입니다. 아직 코드나 기능이 없고, README.md, AGENTS.md, DECISIONS.md, PLAN.md, PRD.md, ARCHITECTURE.md, SCREEN-SPEC.md, DATA-MODEL.md(초안)만 있습니다. PLAN.md의 P-04(PRD.md 작성)를 마쳤고, 첫 버전 기능 범위는 DECISIONS.md의 D-002와 D-011로 정했습니다. 저장 방식, 본인 확인 방법, 화면 기술, 서버 기술, 데이터베이스, 호스팅, 메일 발송은 D-003~D-012로 정했습니다. P-05(ARCHITECTURE.md 작성)를 마쳤습니다. P-06(SCREEN-SPEC.md 작성)을 마쳤습니다. 돈·날짜 규칙은 D-013, D-014로 정했습니다. 지금은 P-07(DATA-MODEL.md 작성)을 진행 중입니다.
 
 이 앱에는 AI 기능을 넣지 않습니다.
 
@@ -17,6 +17,7 @@
 - `PRD.md` — 첫 버전의 요구사항 후보와 검토 내용을 적습니다.
 - `ARCHITECTURE.md` — 전체 구조, 사용할 기술과 실행 환경, 구성 요소와 책임, 데이터·실패 흐름을 적습니다.
 - `SCREEN-SPEC.md` — 화면 목록과 이동 흐름, 화면별 입력 칸·버튼·알림 문구, 화면 크기 대응을 적습니다.
+- `DATA-MODEL.md` — 데이터베이스에 저장하는 정보의 항목과 형식, 금액·날짜·글자 수 규칙, 분류·결제 수단 목록, 비밀번호 규칙을 적습니다.
 
 ## 시작 방법
 

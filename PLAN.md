@@ -12,7 +12,8 @@
   - PRD.md — 있음 (요구사항 후보 정리와 후보 표. 모든 후보의 판정을 마침)
   - ARCHITECTURE.md — 있음
   - SCREEN-SPEC.md — 있음 (승인됨)
-  - DATA-MODEL.md, API-SPEC.md, TEST-PLAN.md — 아직 없음
+  - DATA-MODEL.md — 있음 (초안)
+  - API-SPEC.md, TEST-PLAN.md — 아직 없음
 
 ## 작업 목록
 
