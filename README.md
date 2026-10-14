@@ -4,7 +4,7 @@
 
 ## 현재 상태
 
-만들기 전입니다. 아직 코드나 기능이 없고, README.md, AGENTS.md, DECISIONS.md, PLAN.md, PRD.md, ARCHITECTURE.md, SCREEN-SPEC.md, DATA-MODEL.md, API-SPEC.md만 있습니다. PLAN.md의 P-04(PRD.md 작성)를 마쳤고, 첫 버전 기능 범위는 DECISIONS.md의 D-002와 D-011로 정했습니다. 저장 방식, 본인 확인 방법, 화면 기술, 서버 기술, 데이터베이스, 호스팅, 메일 발송은 D-003~D-012로 정했습니다. P-05(ARCHITECTURE.md 작성)를 마쳤습니다. P-06(SCREEN-SPEC.md 작성)을 마쳤습니다. 돈·날짜 규칙은 D-013, D-014로 정했습니다. P-07(DATA-MODEL.md 작성)을 마쳤습니다. 로그인 유지 방식은 D-015로 정했습니다. P-08(API-SPEC.md 작성)을 마쳤습니다. 2026-10-14에 결정을 바꿨습니다(D-016 ~ D-022). 로그인 기능을 빼고, 집 컴퓨터 한 대의 크롬에서만 쓰며, 서버는 Python + FastAPI, 데이터베이스는 SQLite로 합니다. 이에 맞춰 ARCHITECTURE.md, SCREEN-SPEC.md, DATA-MODEL.md, API-SPEC.md를 고쳤고, 이 네 문서는 다시 승인을 기다립니다. 그다음은 P-09(TEST-PLAN.md 작성)입니다.
+만들기 전입니다. 아직 코드나 기능이 없고, README.md, AGENTS.md, DECISIONS.md, PLAN.md, PRD.md, ARCHITECTURE.md, SCREEN-SPEC.md, DATA-MODEL.md, API-SPEC.md만 있습니다. PLAN.md의 P-04(PRD.md 작성)를 마쳤고, 첫 버전 기능 범위는 DECISIONS.md의 D-002와 D-011로 정했습니다. 저장 방식, 본인 확인 방법, 화면 기술, 서버 기술, 데이터베이스, 호스팅, 메일 발송은 D-003~D-012로 정했습니다. P-05(ARCHITECTURE.md 작성)를 마쳤습니다. P-06(SCREEN-SPEC.md 작성)을 마쳤습니다. 돈·날짜 규칙은 D-013, D-014로 정했습니다. P-07(DATA-MODEL.md 작성)을 마쳤습니다. 로그인 유지 방식은 D-015로 정했습니다. P-08(API-SPEC.md 작성)을 마쳤습니다. 2026-10-14에 결정을 바꿨습니다(D-016 ~ D-022). 로그인 기능을 빼고, 집 컴퓨터 한 대의 크롬에서만 쓰며, 서버는 Python + FastAPI, 데이터베이스는 SQLite로 합니다. 이에 맞춰 ARCHITECTURE.md, SCREEN-SPEC.md, DATA-MODEL.md, API-SPEC.md를 고쳤고, 이 네 문서는 2026-10-14에 다시 승인했습니다. 그다음은 P-09(TEST-PLAN.md 작성)입니다.
 
 이 앱에는 AI 기능을 넣지 않습니다.
 
