@@ -30,7 +30,7 @@
 | P-08 | API-SPEC.md 작성 | 완료 | API-SPEC.md가 있고, 화면이 데이터를 읽고 쓰는 방법이 기능별로 적혀 있다. |
 | P-09 | TEST-PLAN.md 작성 | 완료 | TEST-PLAN.md가 있고, PRD.md의 기능마다 확인 방법이 하나 이상 적혀 있다. |
 | P-10 | 도구 확인 | 완료 | Python, Node.js·npm, Git의 버전을 명령으로 확인한 결과가 "실제 검증 결과"에 적혀 있다. 서버·화면 자동 테스트 도구 이름과 실행 명령, 데이터베이스 파일 위치(TEST-PLAN.md 11절, ARCHITECTURE.md 3절 "미정")를 사람이 정했다. 없는 도구는 사람이 승인한 뒤 설치했다. |
-| P-11 | 화면 틀 | 예정 | React + TypeScript(D-005) 화면을 개발 명령으로 켜면, 크롬에서 S-05의 빈 틀이 보인다. 화면 자동 테스트가 한 개 이상 돌아가고 통과한다. |
+| P-11 | 화면 틀 | 완료 | React + TypeScript(D-005) 화면을 개발 명령으로 켜면, 크롬에서 S-05의 빈 틀이 보인다. 화면 자동 테스트가 한 개 이상 돌아가고 통과한다. |
 | P-12 | 서버 틀 | 예정 | FastAPI(D-018) 서버가 localhost에서 켜진다. DATA-MODEL.md 표대로 SQLite(D-019) 파일이 만들어진다. A-10의 응답이 DATA-MODEL.md의 분류·결제 수단 목록과 같다. 서버 자동 테스트가 임시 데이터베이스(TEST-PLAN.md 4절)로 돌아가고 통과한다. |
 | P-13 | 화면·서버 연결 | 예정 | FastAPI가 빌드한 화면 파일을 함께 내보낸다(D-020). 크롬에서 한 주소(localhost)로 열면 S-05가 A-10 응답을 받아 보인다. TEST-PLAN.md 5.7(R-030) 항목을 실행한 결과가 적혀 있다. |
 | P-14 | 기록 적기 | 예정 | S-06에서 PRD.md "기록 한 건의 내용" 규칙에 맞는 기록만 저장된다(A-08). TEST-PLAN.md 5.1(T-101 ~ T-133)의 결과가 적혀 있다. |
@@ -48,7 +48,7 @@
   - PRD.md에 없는 기능은 만들지 않는다. ("첫 버전에 넣지 않을 기능 (확정)" 포함. 예: 고치기)
   - 확정 문서(DECISIONS.md, PRD.md, ARCHITECTURE.md, SCREEN-SPEC.md, DATA-MODEL.md, API-SPEC.md, TEST-PLAN.md)의 이름·규칙을 바꾸지 않는다. (화면·API 번호, 알림 문구, 오류 코드, 항목 이름 포함)
 - **읽을 요구·설계·TEST-PLAN 항목**: PRD.md, ARCHITECTURE.md, SCREEN-SPEC.md, DATA-MODEL.md, API-SPEC.md, TEST-PLAN.md. 각 작업에서 볼 부분은 작업 목록의 완료 조건에 적었다.
-- **다음 실행 위치와 확인할 명령**: P-10 도구 확인부터 시작한다. 확인할 명령은 P-10에서 사람의 승인을 받아 정한다. [AI 제안] 예: `python --version`, `node --version`, `npm --version`, `git --version`
+- **다음 실행 위치와 확인할 명령**: P-11 화면 틀부터 시작한다. (P-10은 2026-10-14에 마침) 확인할 명령: `frontend/` 안에서 `npm test`, `npm run build`, `npm run dev` 뒤 크롬에서 `http://localhost:5173` 열기
 - **중단 조건과 복구 방법**
   - 문서끼리 다르거나 정하지 않은 것이 나오면 멈추고 사람에게 묻는다.
   - 문제가 생기면 마지막 커밋으로 되돌린다. 되돌리기는 지금 바뀐 내용을 지우는 일이므로, 할 때마다 사람의 승인을 받는다. (AGENTS.md "안전")
@@ -69,6 +69,8 @@
 - **P-09**: 사람이 TEST-PLAN.md의 승인 확인 일곱 항목을 확인하고 2026-10-14에 완료로 정함.
 - **P-10 (AI 실행, 2026-10-14)**: 사람이 승인한 명령 7개를 실행함. 모두 exit 0. `python --version` → Python 3.12.10, `py --version` → Python 3.12.10, `pip --version` → pip 25.0.1 (python 3.12), `python -c "import sqlite3; print(sqlite3.sqlite_version)"` → 3.49.1, `node --version` → v22.23.3, `npm --version` → 10.9.9, `git --version` → git version 2.56.0.windows.2. 없는 도구가 없어 설치하지 않음.
 - **P-10 (2026-10-14)**: 사람이 버전, 테스트 도구, 실행 명령, 데이터베이스 파일 위치를 정함 (ARCHITECTURE.md 3절, TEST-PLAN.md 3절·11절).
+- **P-11 (AI 실행, 2026-10-14)**: 사람이 승인한 명령을 실행함. `npm create vite@latest frontend -- --template react-ts --no-interactive` → exit 0. `npm install` → exit 0, 보안 경고 0건. `npm install -D vitest jsdom @testing-library/react @testing-library/jest-dom` → exit 0, 보안 경고 0건. 설치된 버전: Vite 8.3, React 19.2, TypeScript 6.0, Vitest 5.0 (`frontend/package-lock.json`으로 고정). 사람이 승인한 Vite 예시 파일 6개를 지우고 `src/index.css`, `index.html`을 덮어씀. 그 뒤 `npm test` → exit 0, 테스트 1개 통과. `npm run build` → exit 0. `npm run dev` → `http://localhost:5173/`에서 켜짐. 앱 안 브라우저로 열어 S-05 틀(한 달 단위, 직접 고르기, ◀ ▶, 수입 합계, 지출 합계, 남은 돈, + 기록 적기, 최근 순 ▼)이 보이고 콘솔 오류가 없음을 확인함.
+- **P-11 (2026-10-14)**: 사람이 크롬에서 `http://localhost:5173`을 열어 S-05 틀이 보이는 것을 확인함.
 
 ## 남은 문제와 다음 행동
 
@@ -86,4 +88,4 @@
 - **테스트 도구 이름과 실행 명령, 직접 확인용 데이터베이스 파일 위치** (TEST-PLAN.md 11절): P-10에서 정함 (ARCHITECTURE.md 3절, TEST-PLAN.md 3절·11절).
 - **2026-10-14에 정할 필요가 없어진 것**: 넓은 화면과 좁은 화면의 기준 너비(D-022), 비밀번호·재설정 링크 값의 해시 방식과 재설정 정보를 지울 시점(D-016).
 - **2026-10-14 고친 문서의 [AI 제안]**: 사람이 2026-10-14에 모두 채택함.
-- **다음 행동**: 이번 목표(P-04 ~ P-09)를 모두 마침. 다음 목표는 "PRD Must를 동작하는 웹앱으로 만들기"(P-10 ~ P-20, P-16은 뺌)로 정함. P-10 도구 확인을 마침(2026-10-14). P-11 화면 틀부터 시작한다.
+- **다음 행동**: 이번 목표(P-04 ~ P-09)를 모두 마침. 다음 목표는 "PRD Must를 동작하는 웹앱으로 만들기"(P-10 ~ P-20, P-16은 뺌)로 정함. P-10 도구 확인, P-11 화면 틀을 마침(2026-10-14). P-12 서버 틀부터 시작한다.
