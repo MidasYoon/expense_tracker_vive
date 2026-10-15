@@ -179,3 +179,24 @@ def list_with_totals(conn: sqlite3.Connection, period_from: str, period_to: str,
         "records": found,
         "totals": {"income": income, "expense": expense, "balance": income - expense},
     }
+
+
+# ---- 기록 지우기 (API-SPEC.md A-09) ----
+
+RECORD_ID_PATTERN = re.compile(r"[0-9]+")
+MAX_RECORD_ID = 2**63 - 1  # SQLite INTEGER의 가장 큰 값
+
+
+def parse_record_id(value: str) -> int | None:
+    """숫자(0-9)로만 된 번호만 기록 번호로 봅니다. 그 밖에는 없는 기록과 같게 다룹니다. [AI 제안·채택] (P-17)"""
+    if not RECORD_ID_PATTERN.fullmatch(value):
+        return None
+    record_id = int(value)
+    return record_id if record_id <= MAX_RECORD_ID else None
+
+
+def delete(conn: sqlite3.Connection, record_id: int) -> bool:
+    """데이터베이스에서 바로 지웁니다. 지운 표시만 남기지 않습니다. (DATA-MODEL.md 5절) 지웠으면 True."""
+    cursor = conn.execute("DELETE FROM records WHERE id = ?", (record_id,))
+    conn.commit()
+    return cursor.rowcount == 1

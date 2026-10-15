@@ -55,6 +55,12 @@ button[aria-pressed='true'] {
   border-bottom: 1px solid #ddd;
 }
 
+.record-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
 .memo {
   white-space: normal;
   overflow-wrap: anywhere;

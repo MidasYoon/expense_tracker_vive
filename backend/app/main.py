@@ -3,7 +3,7 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 
 from fastapi import FastAPI, Request
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, Response
 from fastapi.staticfiles import StaticFiles
 
 from app import clock, db, records
@@ -97,6 +97,19 @@ def create_app(frontend_dist: Path = FRONTEND_DIST) -> FastAPI:
         finally:
             conn.close()
         return JSONResponse(status_code=201, content=record)
+
+    # A-09 기록 지우기 (API-SPEC.md A-09). "정말 지울까요?"는 화면(S-07)이 묻습니다.
+    @app.delete("/api/records/{record_id}")
+    def delete_record(record_id: str) -> Response:
+        parsed = records.parse_record_id(record_id)
+        if parsed is not None:
+            conn = db.connect()
+            try:
+                if records.delete(conn, parsed):
+                    return Response(status_code=204)
+            finally:
+                conn.close()
+        return JSONResponse(status_code=404, content={"code": "RECORD_NOT_FOUND"})
 
     # 화면 파일은 API 다음에 붙여, /api/ 주소는 API가 먼저 받게 합니다.
     # 빌드하지 않아 폴더가 없으면 API만 켭니다.

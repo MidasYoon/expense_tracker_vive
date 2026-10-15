@@ -1,5 +1,14 @@
 import { useEffect, useRef, useState } from 'react'
-import { fetchOptions, fetchRecords, type Options, type Order, type RecordList } from './api.ts'
+import {
+  deleteRecord,
+  fetchOptions,
+  fetchRecords,
+  type Options,
+  type Order,
+  type RecordList,
+  type SavedRecord,
+} from './api.ts'
+import DeleteDialog from './DeleteDialog.tsx'
 import HomeScreen, { type View } from './HomeScreen.tsx'
 import { currentMonth, monthPeriod, shiftMonth, type Period } from './period.ts'
 import RecordForm from './RecordForm.tsx'
@@ -22,6 +31,10 @@ function App() {
   const [order, setOrder] = useState<Order>('desc')
   const [list, setList] = useState<RecordList | null>(null)
   const [reloadKey, setReloadKey] = useState(0)
+
+  // S-07에서 지울 기록
+  const [deleteTarget, setDeleteTarget] = useState<SavedRecord | null>(null)
+  const [deleting, setDeleting] = useState(false)
 
   const period: Period = view.mode === 'month' ? monthPeriod(view.month) : view.period
 
@@ -56,6 +69,23 @@ function App() {
     setReloadKey((k) => k + 1)
   }
 
+  const handleDeleteYes = async () => {
+    if (deleteTarget === null) return
+    setDeleting(true)
+    try {
+      if ((await deleteRecord(deleteTarget.id)) === 'deleted') {
+        setDeleteTarget(null)
+        // 지운 뒤 목록과 합계를 다시 불러옵니다. 고른 기간과 순서는 바꾸지 않습니다. (SCREEN-SPEC.md S-07)
+        setReloadKey((k) => k + 1)
+      }
+      // 실패(이미 지워진 기록, 연결 실패 등) 알림은 P-18에서 더합니다. 그때까지 창을 열어 둡니다.
+    } catch {
+      // 위와 같음 (P-18)
+    } finally {
+      setDeleting(false)
+    }
+  }
+
   const moveMonth = (delta: number) => {
     if (view.mode === 'month') setView({ mode: 'month', month: shiftMonth(view.month, delta) })
   }
@@ -78,9 +108,18 @@ function App() {
         list={list}
         options={options}
         onAddRecord={() => setFormOpen(true)}
+        onDeleteRecord={setDeleteTarget}
       />
       {formOpen && (
         <RecordForm options={options} onSaved={handleSaved} onCancel={() => setFormOpen(false)} />
+      )}
+      {deleteTarget && (
+        <DeleteDialog
+          record={deleteTarget}
+          deleting={deleting}
+          onYes={handleDeleteYes}
+          onNo={() => setDeleteTarget(null)}
+        />
       )}
     </>
   )

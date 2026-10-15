@@ -28,6 +28,7 @@ function renderHome(list: RecordList | null) {
       list={list}
       options={OPTIONS}
       onAddRecord={noop}
+      onDeleteRecord={noop}
     />,
   )
 }

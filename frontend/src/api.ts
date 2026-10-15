@@ -42,6 +42,12 @@ export async function fetchRecords(from: string, to: string, order: Order): Prom
   return response.json()
 }
 
+// A-09 기록 지우기. 연결 실패는 fetch가 오류를 던집니다.
+export async function deleteRecord(id: number): Promise<'deleted' | 'failed'> {
+  const response = await fetch(`/api/records/${id}`, { method: 'DELETE' })
+  return response.status === 204 ? 'deleted' : 'failed'
+}
+
 export type NewRecord = {
   type: 'INCOME' | 'EXPENSE'
   amount: number

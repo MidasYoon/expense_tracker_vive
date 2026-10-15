@@ -1,8 +1,8 @@
 /// <reference types="node" />
-// 화면 흐름 (P-13 ~ P-15). process.env.TZ를 바꾸기 위해 Node 형식을 씁니다.
-import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
+// 화면 흐름 (P-13 ~ P-17). process.env.TZ를 바꾸기 위해 Node 형식을 씁니다.
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import type { RecordList } from './api.ts'
+import type { RecordList, SavedRecord } from './api.ts'
 import App from './App.tsx'
 import { EMPTY_MESSAGE } from './HomeScreen.tsx'
 import { PERIOD_ERROR } from './period.ts'
@@ -12,13 +12,18 @@ const OPTIONS = { incomeCategories: [], expenseCategories: [], paymentMethods: [
 const EMPTY: RecordList = { records: [], totals: { income: 0, expense: 0, balance: 0 } }
 
 type ListResponder = (url: string) => Promise<RecordList> | RecordList
+type DeleteResponder = () => Promise<{ status: number }> | { status: number }
 
 let fetchMock: ReturnType<typeof vi.fn>
 
-function stubServer(list: ListResponder = () => EMPTY) {
+function stubServer(list: ListResponder = () => EMPTY, remove: DeleteResponder = () => ({ status: 204 })) {
   fetchMock = vi.fn(async (url: string, init?: RequestInit) => {
     if (url === '/api/options') return { ok: true, status: 200, json: async () => OPTIONS }
     if (url === '/api/records' && init?.method === 'POST') return { ok: true, status: 201, json: async () => ({}) }
+    if (init?.method === 'DELETE') {
+      const { status } = await remove()
+      return { ok: status === 204, status, json: async () => ({ code: 'RECORD_NOT_FOUND' }) }
+    }
     const body = await list(url)
     return { ok: true, status: 200, json: async () => body }
   })
@@ -244,4 +249,83 @@ it('기간을 빨리 바꾸면 늦게 온 이전 응답은 버린다', async () 
   })
 
   expect(screen.queryByText('999원')).not.toBeInTheDocument()
+})
+
+describe('지우기 (P-17)', () => {
+  const RECORD: SavedRecord = {
+    id: 7,
+    type: 'EXPENSE',
+    amount: 12000,
+    occurredAt: '2026-10-12T18:30',
+    memo: '저녁',
+    category: null,
+    paymentMethod: null,
+  }
+  const WITH_RECORD: RecordList = { records: [RECORD], totals: { income: 0, expense: 12000, balance: -12000 } }
+  const deleteRequests = () =>
+    fetchMock.mock.calls.filter((call) => (call[1] as RequestInit | undefined)?.method === 'DELETE')
+
+  async function renderWithRecord(remove?: DeleteResponder) {
+    stubServer(() => WITH_RECORD, remove)
+    await renderApp()
+    await screen.findByText('저녁')
+  }
+
+  it('T-311 [지우기]만 누르면 S-07이 열리고 요청하지 않는다. [아니요]는 요청 없이 닫는다', async () => {
+    await renderWithRecord()
+
+    click('지우기')
+    expect(within(screen.getByRole('dialog')).getByText('정말 지울까요?')).toBeInTheDocument()
+    expect(deleteRequests()).toHaveLength(0)
+
+    click('아니요')
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    expect(deleteRequests()).toHaveLength(0)
+  })
+
+  it('T-311 [예]는 A-09를 보내고, 성공하면 창을 닫고 A-07을 다시 부른다', async () => {
+    await renderWithRecord()
+    const before = listRequests().length
+    click('지우기')
+
+    click('예')
+
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
+    expect(deleteRequests().map((call) => call[0])).toEqual(['/api/records/7'])
+    await waitFor(() => expect(listRequests()).toHaveLength(before + 1))
+    expect(lastListRequest()).toBe('/api/records?from=2026-10-01&to=2026-10-31&order=desc')
+  })
+
+  it('T-212 ③ 오래된 순으로 바꾼 뒤 지워도 오래된 순 그대로', async () => {
+    await renderWithRecord()
+    click('최근 순 ▼')
+    await waitFor(() => expect(lastListRequest()).toContain('order=asc'))
+    click('지우기')
+
+    click('예')
+
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
+    await waitFor(() => expect(listRequests().filter((u) => u.includes('order=asc'))).toHaveLength(2))
+    expect(screen.getByRole('button', { name: '오래된 순 ▼' })).toBeInTheDocument()
+  })
+
+  it('응답을 기다리는 동안 [예]를 다시 눌러도 한 번만 보낸다', async () => {
+    await renderWithRecord(() => new Promise(() => {}))
+    click('지우기')
+
+    click('예')
+    click('예')
+
+    expect(deleteRequests()).toHaveLength(1)
+  })
+
+  it('실패하면(예: 404) 알림 없이 창을 열어 둔다 (알림은 P-18)', async () => {
+    await renderWithRecord(() => ({ status: 404 }))
+    click('지우기')
+
+    click('예')
+
+    await waitFor(() => expect(screen.getByRole('button', { name: '예' })).toBeEnabled())
+    expect(screen.getByRole('dialog')).toBeInTheDocument()
+  })
 })

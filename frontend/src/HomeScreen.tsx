@@ -1,5 +1,4 @@
 // S-05 가계부 기본 화면 (SCREEN-SPEC.md S-05)
-// 기록의 [지우기]는 P-17에서 더합니다.
 import { useState } from 'react'
 import type { Options, Order, RecordList, SavedRecord } from './api.ts'
 import { formatAmount, formatListDateTime } from './format.ts'
@@ -22,6 +21,8 @@ type Props = {
   list: RecordList | null
   options: Options | null
   onAddRecord: () => void
+  // 기록의 [지우기]. S-07을 엽니다.
+  onDeleteRecord: (record: SavedRecord) => void
 }
 
 export const EMPTY_MESSAGE = '이 기간에는 기록이 없습니다.'
@@ -61,14 +62,26 @@ function optionName(options: Options | null, code: string | null): string | null
   return all.find((o) => o.code === code)?.name ?? null
 }
 
-function RecordItem({ record, options }: { record: SavedRecord; options: Options | null }) {
+type RecordItemProps = {
+  record: SavedRecord
+  options: Options | null
+  onDelete: (record: SavedRecord) => void
+}
+
+function RecordItem({ record, options, onDelete }: RecordItemProps) {
   // 분류와 결제 수단 가운데 적은 것만 보여 줍니다. 둘 다 없으면 비워 둡니다. [AI 제안·채택] (P-15)
   const extras = [optionName(options, record.category), optionName(options, record.paymentMethod)].filter(Boolean)
   return (
     <li className="record">
-      <div>
-        {formatListDateTime(record.occurredAt)} {record.type === 'INCOME' ? '수입' : '지출'}{' '}
-        {formatAmount(record.amount)}
+      {/* [지우기]는 첫 줄 오른쪽 [AI 제안·채택] (P-17) */}
+      <div className="record-head">
+        <span>
+          {formatListDateTime(record.occurredAt)} {record.type === 'INCOME' ? '수입' : '지출'}{' '}
+          {formatAmount(record.amount)}
+        </span>
+        <button type="button" onClick={() => onDelete(record)}>
+          지우기
+        </button>
       </div>
       <div className="memo">{record.memo}</div>
       <div>{extras.join(' · ')}</div>
@@ -140,7 +153,7 @@ function HomeScreen(props: Props) {
           ) : (
             <ul className="records">
               {list.records.map((record) => (
-                <RecordItem key={record.id} record={record} options={options} />
+                <RecordItem key={record.id} record={record} options={options} onDelete={props.onDeleteRecord} />
               ))}
             </ul>
           ))}
