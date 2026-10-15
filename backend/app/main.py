@@ -2,10 +2,11 @@
 from contextlib import asynccontextmanager
 from pathlib import Path
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 
-from app import db
+from app import clock, db, records
 from app.options import EXPENSE_CATEGORIES, INCOME_CATEGORIES, PAYMENT_METHODS
 
 # 빌드한 화면 파일 (npm run build). 화면과 API를 같은 주소에서 내보냅니다. (D-020)
@@ -34,6 +35,37 @@ def create_app(frontend_dist: Path = FRONTEND_DIST) -> FastAPI:
             "expenseCategories": _to_list(EXPENSE_CATEGORIES),
             "paymentMethods": _to_list(PAYMENT_METHODS),
         }
+
+    # A-08 기록 적기 (API-SPEC.md A-08)
+    @app.post("/api/records")
+    async def create_record(request: Request) -> JSONResponse:
+        # 본문은 JSON으로만 받습니다. 다른 사이트가 보내는 요청을 막기 위해서입니다. (API-SPEC.md 3절 CSRF)
+        content_type = request.headers.get("content-type", "").split(";")[0].strip().lower()
+        if content_type != "application/json":
+            return JSONResponse(status_code=415, content={"code": "UNSUPPORTED_MEDIA_TYPE"})
+
+        try:
+            body = await request.json()
+        except ValueError:
+            body = None
+        # 깨진 JSON이나 객체가 아닌 JSON은 빈 요청과 같게 다룹니다. [AI 제안·채택] (P-14)
+        if not isinstance(body, dict):
+            body = {}
+
+        now = clock.now_kst()
+        field_errors = records.validate(body, now)
+        if field_errors:
+            return JSONResponse(
+                status_code=400,
+                content={"code": "VALIDATION_FAILED", "fieldErrors": field_errors},
+            )
+
+        conn = db.connect()
+        try:
+            record = records.create(conn, body, now)
+        finally:
+            conn.close()
+        return JSONResponse(status_code=201, content=record)
 
     # 화면 파일은 API 다음에 붙여, /api/ 주소는 API가 먼저 받게 합니다.
     # 빌드하지 않아 폴더가 없으면 API만 켭니다.

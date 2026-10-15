@@ -1,9 +1,17 @@
 // S-05 가계부 기본 화면 (SCREEN-SPEC.md S-05)
-// P-11에서는 배치만 둔 틀입니다. 버튼 동작, 금액, 목록은 P-14 ~ P-18에서 채웁니다.
+// 기간 고르기, 합계, 목록, 순서 바꾸기는 아직 틀만 있습니다. P-15에서 채웁니다.
 
-function HomeScreen() {
+type Props = {
+  // 화면 위쪽에 보여 줄 알림 (예: "저장했습니다.")
+  notice: string | null
+  onAddRecord: () => void
+}
+
+function HomeScreen({ notice, onAddRecord }: Props) {
   return (
     <main>
+      {notice && <p role="status">{notice}</p>}
+
       <section aria-label="기간 고르기">
         <div>
           <button type="button">한 달 단위</button>
@@ -28,7 +36,9 @@ function HomeScreen() {
       </section>
 
       <div>
-        <button type="button">+ 기록 적기</button>
+        <button type="button" onClick={onAddRecord}>
+          + 기록 적기
+        </button>
       </div>
       <div>
         <button type="button">최근 순 ▼</button>

@@ -3,3 +3,37 @@ body {
   padding: 16px;
   font-family: system-ui, 'Segoe UI', 'Malgun Gothic', sans-serif;
 }
+
+/* S-06: S-05 위에 뜨는 창 */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.4);
+}
+
+.modal {
+  background: #fff;
+  padding: 16px 24px;
+  min-width: 360px;
+}
+
+.field {
+  margin-bottom: 12px;
+}
+
+.field label,
+.field > span:first-child {
+  margin-right: 8px;
+}
+
+.field-error {
+  margin: 4px 0 0;
+  color: #c00;
+}
+
+button[aria-pressed='true'] {
+  font-weight: bold;
+}
