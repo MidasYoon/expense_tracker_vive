@@ -42,12 +42,28 @@ function CustomPeriod({ initial, onApply }: { initial: Period; onApply: (period:
   }
 
   return (
-    <div>
-      <label htmlFor="from">시작일</label>
-      <input id="from" type="date" value={draft.from} onChange={(e) => setDraft({ ...draft, from: e.target.value })} />
-      <label htmlFor="to">끝날</label>
-      <input id="to" type="date" value={draft.to} onChange={(e) => setDraft({ ...draft, to: e.target.value })} />
-      <button type="button" onClick={apply}>
+    <div className="custom-period">
+      <div className="date-field">
+        <label htmlFor="from">시작일</label>
+        <input
+          id="from"
+          className="input"
+          type="date"
+          value={draft.from}
+          onChange={(e) => setDraft({ ...draft, from: e.target.value })}
+        />
+      </div>
+      <div className="date-field">
+        <label htmlFor="to">끝날</label>
+        <input
+          id="to"
+          className="input"
+          type="date"
+          value={draft.to}
+          onChange={(e) => setDraft({ ...draft, to: e.target.value })}
+        />
+      </div>
+      <button type="button" className="btn" onClick={apply}>
         보기
       </button>
       {error && <p className="field-error">{error}</p>}
@@ -70,20 +86,21 @@ type RecordItemProps = {
 function RecordItem({ record, options, onDelete }: RecordItemProps) {
   // 분류와 결제 수단 가운데 적은 것만 보여 줍니다. 둘 다 없으면 비워 둡니다. [AI 제안·채택] (P-15)
   const extras = [optionName(options, record.category), optionName(options, record.paymentMethod)].filter(Boolean)
+  const income = record.type === 'INCOME'
+  // 첫 줄 날짜·시간, 구분 꼬리표, 금액, [지우기] → 메모 → 분류·결제 수단 (SCREEN-SPEC.md 10.5)
   return (
     <li className="record">
       {/* [지우기]는 첫 줄 오른쪽 [AI 제안·채택] (P-17) */}
       <div className="record-head">
-        <span>
-          {formatListDateTime(record.occurredAt)} {record.type === 'INCOME' ? '수입' : '지출'}{' '}
-          {formatAmount(record.amount)}
-        </span>
-        <button type="button" onClick={() => onDelete(record)}>
+        <span className="record-when">{formatListDateTime(record.occurredAt)}</span>{' '}
+        <span className={income ? 'chip chip-income' : 'chip chip-expense'}>{income ? '수입' : '지출'}</span>{' '}
+        <span className={income ? 'record-amount income-amount' : 'record-amount'}>{formatAmount(record.amount)}</span>
+        <button type="button" className="btn btn-text record-delete" onClick={() => onDelete(record)}>
           지우기
         </button>
       </div>
       <div className="memo">{record.memo}</div>
-      <div>{extras.join(' · ')}</div>
+      <div className="record-extras">{extras.join(' · ')}</div>
     </li>
   )
 }
@@ -93,60 +110,74 @@ function HomeScreen(props: Props) {
   const totals = list?.totals
 
   return (
-    <main>
-      <section aria-label="기간 고르기">
-        <div>
-          <button type="button" aria-pressed={view.mode === 'month'} onClick={props.onMonthMode}>
-            한 달 단위
-          </button>
-          <button type="button" aria-pressed={view.mode === 'custom'} onClick={props.onCustomMode}>
-            직접 고르기
-          </button>
-        </div>
-        {view.mode === 'month' ? (
-          <div>
-            <button type="button" aria-label="이전 달" onClick={props.onPrevMonth}>
-              ◀
+    <main className="page">
+      {/* 기간 고르기와 합계를 카드 하나에 담습니다. 합계는 기간 고르기 바로 아래 (SCREEN-SPEC.md 10.5) */}
+      <div className="card period-card">
+        <section aria-label="기간 고르기" className="period-row">
+          <div className="segmented">
+            <button type="button" aria-pressed={view.mode === 'month'} onClick={props.onMonthMode}>
+              한 달 단위
             </button>
-            <span> {monthLabel(view.month)} </span>
-            <button type="button" aria-label="다음 달" onClick={props.onNextMonth}>
-              ▶
+            <button type="button" aria-pressed={view.mode === 'custom'} onClick={props.onCustomMode}>
+              직접 고르기
             </button>
           </div>
-        ) : (
-          <CustomPeriod key={`${period.from}~${period.to}`} initial={period} onApply={props.onApplyCustom} />
-        )}
-      </section>
+          {view.mode === 'month' ? (
+            <div className="month-nav">
+              <button type="button" className="btn btn-icon" aria-label="이전 달" onClick={props.onPrevMonth}>
+                ◀
+              </button>
+              <span className="month-label">{monthLabel(view.month)}</span>
+              <button type="button" className="btn btn-icon" aria-label="다음 달" onClick={props.onNextMonth}>
+                ▶
+              </button>
+            </div>
+          ) : (
+            <CustomPeriod key={`${period.from}~${period.to}`} initial={period} onApply={props.onApplyCustom} />
+          )}
+        </section>
 
-      <section aria-label="합계">
-        <dl>
-          <dt>수입 합계</dt>
-          <dd>{totals && formatAmount(totals.income)}</dd>
-          <dt>지출 합계</dt>
-          <dd>{totals && formatAmount(totals.expense)}</dd>
-          <dt>남은 돈</dt>
-          {/* 마이너스이면 부호를 붙이고 빨간색으로 보여 줍니다. (SCREEN-SPEC.md S-05) */}
-          <dd className={totals && totals.balance < 0 ? 'negative' : undefined}>
-            {totals && formatAmount(totals.balance)}
-          </dd>
-        </dl>
-      </section>
+        <section aria-label="합계">
+          <dl className="totals">
+            <div className="total">
+              <dt>수입 합계</dt>
+              <dd className="income-amount">{totals && formatAmount(totals.income)}</dd>
+            </div>
+            <div className="total">
+              <dt>지출 합계</dt>
+              <dd>{totals && formatAmount(totals.expense)}</dd>
+            </div>
+            <div className="total">
+              <dt>남은 돈</dt>
+              {/* 마이너스이면 부호를 붙이고 빨간색으로 보여 줍니다. (SCREEN-SPEC.md S-05) */}
+              <dd className={totals && totals.balance < 0 ? 'negative' : undefined}>
+                {totals && formatAmount(totals.balance)}
+              </dd>
+            </div>
+          </dl>
+        </section>
+      </div>
 
-      <div>
-        <button type="button" onClick={props.onAddRecord}>
+      <div className="toolbar">
+        <button type="button" className="btn btn-primary btn-add" onClick={props.onAddRecord}>
           + 기록 적기
         </button>
-      </div>
-      <div>
-        <button type="button" onClick={props.onToggleOrder}>
+        <button type="button" className="btn" onClick={props.onToggleOrder}>
           {order === 'desc' ? '최근 순 ▼' : '오래된 순 ▼'}
         </button>
       </div>
 
-      <section aria-label="목록">
+      <section aria-label="목록" className="card list-card">
         {list &&
           (list.records.length === 0 ? (
-            <p>{EMPTY_MESSAGE}</p>
+            <div className="empty">
+              <svg aria-hidden="true" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M3 13h5l1.5 3h5l1.5-3h5" />
+                <path d="M5.5 5h13L21 13v6H3v-6z" />
+              </svg>
+              <p>{EMPTY_MESSAGE}</p>
+            </div>
           ) : (
             <ul className="records">
               {list.records.map((record) => (

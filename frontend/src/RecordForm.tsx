@@ -91,12 +91,15 @@ function RecordForm({ options, onSaved, onCancel, onSubmitStart, onFailure }: Pr
     }
   }
 
+  // 이름표는 칸 위, 날짜·시간과 분류·결제 수단은 두 칸씩 나란히 (SCREEN-SPEC.md 10.5)
   return (
     <div className="modal-backdrop">
-      <section className="modal" role="dialog" aria-label="기록 적기">
+      <section className="modal modal-form" role="dialog" aria-label="기록 적기">
+        <h2 className="modal-title">기록 적기</h2>
+
         <div className="field">
-          <span>구분</span>
-          <div>
+          <span className="field-label">구분</span>
+          <div className={errors.type ? 'type-choice invalid' : 'type-choice'}>
             <button type="button" aria-pressed={values.type === 'INCOME'} onClick={() => chooseType('INCOME')}>
               수입
             </button>
@@ -108,11 +111,15 @@ function RecordForm({ options, onSaved, onCancel, onSubmitStart, onFailure }: Pr
         </div>
 
         <div className="field">
-          <label htmlFor="amount">금액</label>
+          <label className="field-label" htmlFor="amount">
+            금액
+          </label>
           <input
             id="amount"
+            className="input"
             type="text"
             inputMode="numeric"
+            aria-invalid={errors.amount ? true : undefined}
             value={values.amount}
             onChange={(e) => set({ amount: e.target.value.replace(/[^0-9]/g, '') })}
           />
@@ -120,67 +127,107 @@ function RecordForm({ options, onSaved, onCancel, onSubmitStart, onFailure }: Pr
         </div>
 
         <div className="field">
-          <label htmlFor="date">날짜</label>
-          <input id="date" type="date" value={values.date} onChange={(e) => set({ date: e.target.value })} />
-          <label htmlFor="time">시간</label>
-          <input id="time" type="time" value={values.time} onChange={(e) => set({ time: e.target.value })} />
+          <div className="field-pair">
+            <div className="field">
+              <label className="field-label" htmlFor="date">
+                날짜
+              </label>
+              <input
+                id="date"
+                className="input"
+                type="date"
+                aria-invalid={errors.occurredAt ? true : undefined}
+                value={values.date}
+                onChange={(e) => set({ date: e.target.value })}
+              />
+            </div>
+            <div className="field">
+              <label className="field-label" htmlFor="time">
+                시간
+              </label>
+              <input
+                id="time"
+                className="input"
+                type="time"
+                aria-invalid={errors.occurredAt ? true : undefined}
+                value={values.time}
+                onChange={(e) => set({ time: e.target.value })}
+              />
+            </div>
+          </div>
           <FieldError message={errors.occurredAt} />
         </div>
 
         <div className="field">
-          <label htmlFor="memo">메모</label>
+          <label className="field-label" htmlFor="memo">
+            메모
+          </label>
           <input
             id="memo"
+            className="input"
             type="text"
+            aria-invalid={errors.memo ? true : undefined}
             value={values.memo}
             onChange={(e) => set({ memo: limitChars(e.target.value, MAX_MEMO_LENGTH) })}
           />
-          <span>
-            {countChars(values.memo)}/{MAX_MEMO_LENGTH}
-          </span>
-          <FieldError message={errors.memo} />
+          <div className="field-foot">
+            <FieldError message={errors.memo} />
+            <span className="char-count">
+              {countChars(values.memo)}/{MAX_MEMO_LENGTH}
+            </span>
+          </div>
         </div>
 
-        <div className="field">
-          <label htmlFor="category">분류</label>
-          <select
-            id="category"
-            value={values.category}
-            disabled={values.type === ''}
-            onChange={(e) => set({ category: e.target.value })}
-          >
-            <option value="">고르지 않음</option>
-            {categories.map((c) => (
-              <option key={c.code} value={c.code}>
-                {c.name}
-              </option>
-            ))}
-          </select>
-          <FieldError message={errors.category} />
+        <div className="field-pair">
+          <div className="field">
+            {/* "(선택)"은 이름표 밖에 둡니다. [사람 결정] (2026-10-15) */}
+            <div className="field-label">
+              <label htmlFor="category">분류</label> <span className="optional">(선택)</span>
+            </div>
+            <select
+              id="category"
+              className="input"
+              aria-invalid={errors.category ? true : undefined}
+              value={values.category}
+              disabled={values.type === ''}
+              onChange={(e) => set({ category: e.target.value })}
+            >
+              <option value="">고르지 않음</option>
+              {categories.map((c) => (
+                <option key={c.code} value={c.code}>
+                  {c.name}
+                </option>
+              ))}
+            </select>
+            <FieldError message={errors.category} />
+          </div>
+          <div className="field">
+            <div className="field-label">
+              <label htmlFor="paymentMethod">결제 수단</label> <span className="optional">(선택)</span>
+            </div>
+            <select
+              id="paymentMethod"
+              className="input"
+              aria-invalid={errors.paymentMethod ? true : undefined}
+              value={values.paymentMethod}
+              onChange={(e) => set({ paymentMethod: e.target.value })}
+            >
+              <option value="">고르지 않음</option>
+              {(options?.paymentMethods ?? []).map((p) => (
+                <option key={p.code} value={p.code}>
+                  {p.name}
+                </option>
+              ))}
+            </select>
+            <FieldError message={errors.paymentMethod} />
+          </div>
         </div>
 
-        <div className="field">
-          <label htmlFor="paymentMethod">결제 수단</label>
-          <select
-            id="paymentMethod"
-            value={values.paymentMethod}
-            onChange={(e) => set({ paymentMethod: e.target.value })}
-          >
-            <option value="">고르지 않음</option>
-            {(options?.paymentMethods ?? []).map((p) => (
-              <option key={p.code} value={p.code}>
-                {p.name}
-              </option>
-            ))}
-          </select>
-          <FieldError message={errors.paymentMethod} />
-        </div>
-
-        <div>
-          <button type="button" onClick={save} disabled={saving}>
+        <div className="modal-actions">
+          <button type="button" className="btn btn-primary" onClick={save} disabled={saving}>
             저장
           </button>
-          <button type="button" onClick={onCancel}>
+          <button type="button" className="btn" onClick={onCancel}>
             취소
           </button>
         </div>

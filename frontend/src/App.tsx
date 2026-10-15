@@ -125,6 +125,12 @@ function App() {
       {/* 화면 맨 위 알림 줄. 창(S-06, S-07)보다 위에 보입니다. [AI 제안·채택] (P-18) */}
       {notice && (
         <p className={`notice-bar ${notice.kind}`} role={notice.kind === 'error' ? 'alert' : 'status'}>
+          {/* 문구 앞 장식 아이콘 (SCREEN-SPEC.md 10.5) */}
+          <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="9" />
+            {notice.kind === 'error' ? <path d="M12 7.5v5.5M12 16.5v.01" /> : <path d="M8 12.5l2.5 2.5L16 9.5" />}
+          </svg>
           {notice.text}
         </p>
       )}

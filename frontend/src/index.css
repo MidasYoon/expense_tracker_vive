@@ -1,10 +1,41 @@
-body {
-  margin: 0;
-  padding: 16px;
-  font-family: system-ui, 'Segoe UI', 'Malgun Gothic', sans-serif;
+/* 디자인 기준의 색 (SCREEN-SPEC.md 10.2) */
+:root {
+  --bg: #f4f3ef;
+  --card: #ffffff;
+  --tile: #f8f7f4;
+  --line: #e2e0da;
+  --field-line: #d5d2ca;
+  --text: #1b1e22;
+  --muted: #5e636b;
+  --accent: #1f57b5;
+  --accent-hover: #1a4a9a;
+  --danger: #c0281e;
+  --field-error: #b0241b;
+  --chip-income-bg: #e3ecfa;
+  --chip-income-text: #174a9c;
+  --chip-expense-bg: #eceae4;
+  --chip-expense-text: #3f444b;
+  --ok-bg: #e4ecf8;
+  --ok-text: #163f82;
+  --ok-line: #c3d3ec;
+  --fail-bg: #fbeae8;
+  --fail-text: #a3221a;
+  --fail-line: #efc2bc;
+  --backdrop: rgba(27, 30, 34, 0.45);
 }
 
-/* 화면 맨 위 알림 줄. 창과 어두운 배경보다 위에 보입니다. */
+/* 글꼴은 맑은 고딕. 숫자는 같은 폭 (SCREEN-SPEC.md 10.1, 10.3) */
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Malgun Gothic', system-ui, sans-serif;
+  font-size: 15px;
+  line-height: 1.55;
+  font-variant-numeric: tabular-nums;
+}
+
+/* 화면 맨 위 알림 줄. 창과 어두운 배경보다 위에 보입니다. (SCREEN-SPEC.md 10.5) */
 .notice-bar {
   position: fixed;
   top: 0;
@@ -12,76 +43,509 @@ body {
   right: 0;
   z-index: 20;
   margin: 0;
-  padding: 8px 16px;
-  background: #eef6ee;
-  border-bottom: 1px solid #9c9;
+  padding: 12px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  font-weight: 600;
+  color: var(--ok-text);
+  background: var(--ok-bg);
+  border-bottom: 1px solid var(--ok-line);
+}
+
+.notice-bar svg {
+  flex: none;
 }
 
 .notice-bar.error {
-  background: #fdecec;
-  border-bottom-color: #c00;
-  color: #c00;
+  color: var(--fail-text);
+  background: var(--fail-bg);
+  border-bottom-color: var(--fail-line);
 }
 
-/* S-06, S-07: S-05 위에 뜨는 창 */
+/* S-06, S-07: S-05 위에 뜨는 창. 창이 화면보다 길면 바탕이 스크롤됩니다. */
 .modal-backdrop {
   position: fixed;
   inset: 0;
   z-index: 10;
+  box-sizing: border-box;
+  padding: 48px 16px;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(0, 0, 0, 0.4);
+  overflow-y: auto;
+  background: var(--backdrop);
 }
 
 .modal {
-  background: #fff;
-  padding: 16px 24px;
-  min-width: 360px;
+  box-sizing: border-box;
+  margin: auto;
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  background: var(--card);
+  border-radius: 16px;
+  box-shadow: 0 20px 48px rgba(27, 30, 34, 0.24);
 }
 
+.modal-form {
+  width: 480px;
+}
+
+.modal-delete {
+  width: 440px;
+}
+
+.modal-title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.modal-actions {
+  padding-top: 4px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+/* S-06 입력 칸: 이름표는 칸 위 */
 .field {
-  margin-bottom: 12px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
 
-.field label,
-.field > span:first-child {
-  margin-right: 8px;
+.field-label {
+  font-size: 14px;
+  font-weight: 600;
 }
 
+.optional {
+  font-weight: 400;
+  color: var(--muted);
+}
+
+/* 두 칸을 나란히 (날짜·시간, 분류·결제 수단) */
+.field-pair {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.field-foot {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.char-count {
+  margin-left: auto;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+/* 구분 [수입] [지출]: 같은 너비의 두 버튼. 고른 쪽은 어두운 바탕 */
+.type-choice {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.type-choice button {
+  height: 44px;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+  background: var(--card);
+  border: 1px solid var(--field-line);
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.type-choice button[aria-pressed='true'] {
+  color: #ffffff;
+  background: var(--text);
+  border-color: var(--text);
+}
+
+.type-choice button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* 틀린 칸은 테두리를 위험색으로 */
+.type-choice.invalid button,
+.input[aria-invalid='true'] {
+  border-color: var(--danger);
+}
+
+/* 칸 아래 알림 (SCREEN-SPEC.md 10.2 입력 알림 글자) */
 .field-error {
-  margin: 4px 0 0;
-  color: #c00;
+  margin: 0;
+  color: var(--field-error);
+  font-size: 13px;
+  font-weight: 600;
 }
 
-button[aria-pressed='true'] {
-  font-weight: bold;
+/* S-07: 지울 기록 요약 상자, 경고 문구, [예] */
+.delete-summary {
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  background: var(--tile);
+  border: 1px solid var(--line);
+  border-radius: 10px;
 }
 
-/* S-05 합계: 남은 돈이 마이너스이면 빨간색 */
+.delete-warning {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--fail-text);
+}
+
+.delete-warning svg {
+  flex: none;
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+/* 버튼: 높이 44px 이상, 모서리 10px (SCREEN-SPEC.md 10.4) */
+.btn {
+  box-sizing: border-box;
+  height: 44px;
+  padding: 0 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+  background: var(--card);
+  border: 1px solid var(--field-line);
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.btn:hover {
+  background: var(--tile);
+}
+
+.btn:focus-visible,
+.segmented button:focus-visible,
+.input:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.btn-primary {
+  color: #ffffff;
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.btn-primary:hover {
+  background: var(--accent-hover);
+}
+
+/* S-07 [예]: 위험색 바탕 */
+.btn-danger {
+  color: #ffffff;
+  background: var(--danger);
+  border-color: var(--danger);
+}
+
+.btn-danger:hover {
+  background: #a82219;
+}
+
+.btn-icon {
+  width: 44px;
+  padding: 0;
+}
+
+/* 테두리 없는 글자 버튼 (목록의 [지우기]) */
+.btn-text {
+  padding: 0 12px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--muted);
+  background: transparent;
+  border-color: transparent;
+}
+
+.btn-text:hover {
+  color: var(--text);
+}
+
+.input {
+  box-sizing: border-box;
+  height: 44px;
+  padding: 0 12px;
+  font: inherit;
+  color: var(--text);
+  background: var(--card);
+  border: 1px solid var(--field-line);
+  border-radius: 10px;
+}
+
+/* ===== S-05 가계부 기본 화면 (SCREEN-SPEC.md 10.5) ===== */
+
+.page {
+  max-width: 880px;
+  margin: 0 auto;
+  padding: 36px 24px 64px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+}
+
+/* 기간 고르기와 합계를 담은 카드 */
+.period-card {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.period-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+/* [한 달 단위] [직접 고르기] 두 칸 전환 버튼 */
+.segmented {
+  display: inline-flex;
+  gap: 4px;
+  padding: 4px;
+  background: var(--chip-expense-bg);
+  border-radius: 10px;
+}
+
+.segmented button {
+  height: 36px;
+  padding: 0 16px;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--muted);
+  background: transparent;
+  border: 0;
+  border-radius: 7px;
+  cursor: pointer;
+}
+
+.segmented button[aria-pressed='true'] {
+  font-weight: 700;
+  color: var(--text);
+  background: var(--card);
+  box-shadow: 0 1px 2px rgba(27, 30, 34, 0.14);
+}
+
+.month-nav {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.month-label {
+  min-width: 148px;
+  text-align: center;
+  font-size: 22px;
+  font-weight: 700;
+}
+
+/* 직접 고르기: 시작일, 끝날, [보기] */
+.custom-period {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 12px;
+}
+
+.date-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.date-field label {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.custom-period .field-error {
+  flex-basis: 100%;
+  margin: 0;
+}
+
+/* 합계 칸 3개 */
+.totals {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.total {
+  flex: 1 1 200px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 16px 20px;
+  background: var(--tile);
+  border-radius: 10px;
+}
+
+.total dt {
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.total dd {
+  margin: 0;
+  min-height: 40px;
+  font-size: 26px;
+  font-weight: 700;
+}
+
+.income-amount {
+  color: var(--accent);
+}
+
+/* 남은 돈이 마이너스이면 빨간색 (부호는 금액에 붙음) */
 .negative {
-  color: #c00;
+  color: var(--danger);
 }
 
-/* S-05 목록: 메모는 줄을 바꿔 전부 보여 줍니다. 줄이거나 "…"로 자르지 않습니다. */
+/* [+ 기록 적기]와 [최근 순 ▼] 줄 */
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.btn-add {
+  height: 48px;
+  padding: 0 22px;
+  font-size: 16px;
+}
+
+/* 목록 카드 */
+.list-card {
+  overflow: hidden;
+}
+
+/* 목록을 불러오기 전이나 불러오지 못했을 때는 빈 카드를 보이지 않습니다. [사람 결정] (2026-10-15) */
+.list-card:empty {
+  display: none;
+}
+
 .records {
   list-style: none;
+  margin: 0;
   padding: 0;
-  max-width: 480px;
 }
 
 .record {
-  padding: 8px 0;
-  border-bottom: 1px solid #ddd;
+  padding: 16px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  border-bottom: 1px solid var(--line);
+}
+
+.record:last-child {
+  border-bottom: 0;
 }
 
 .record-head {
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  gap: 10px;
 }
 
+.record-when {
+  font-weight: 600;
+}
+
+.chip {
+  padding: 1px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 20px;
+}
+
+.chip-income {
+  color: var(--chip-income-text);
+  background: var(--chip-income-bg);
+}
+
+.chip-expense {
+  color: var(--chip-expense-text);
+  background: var(--chip-expense-bg);
+}
+
+.record-amount {
+  margin-left: auto;
+  font-size: 17px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.record-delete {
+  margin: -8px -12px -8px 0;
+}
+
+/* 메모는 줄을 바꿔 전부 보여 줍니다. 줄이거나 "…"로 자르지 않습니다. */
 .memo {
   white-space: normal;
   overflow-wrap: anywhere;
+}
+
+.record-extras {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.record-extras:empty {
+  display: none;
+}
+
+/* 기록이 없는 기간 */
+.empty {
+  padding: 56px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  color: var(--muted);
+}
+
+.empty p {
+  margin: 0;
 }
