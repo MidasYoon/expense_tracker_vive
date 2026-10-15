@@ -15,7 +15,11 @@
 - 데이터베이스: SQLite (D-019)
 - 실행 환경: 집 컴퓨터 한 대, localhost에서만 접속. 운영 환경은 두지 않음 (D-017)
 - 로그인 기능 없음 (D-016). 지원 브라우저: 컴퓨터의 크롬 (D-022)
-- 실행 방법: 아직 정하지 않음. 앱을 만들기 시작하면 이 칸을 채웁니다.
+- 실행 방법: README.md "실행 방법"을 따릅니다. 핵심 명령(Windows PowerShell, 프로젝트 맨 위 폴더에서 시작):
+  - 화면 빌드: `cd frontend` → `npm run build` → `cd ..`
+  - 서버 켜기: `cd backend` → `..\.venv\Scripts\python -m uvicorn app.main:app --host 127.0.0.1 --port 8000` → 크롬에서 `http://localhost:8000`
+  - 자동 테스트: `cd frontend` → `npm test` → `cd ..\backend` → `..\.venv\Scripts\python -m pytest` → `cd ..`
+  - 확인할 때는 실제 기록(`data/expense.db`) 대신 확인용 데이터베이스(`data/expense-check.db`)를 씁니다. (TEST-PLAN.md 4절)
 
 ## 작업 전
 
