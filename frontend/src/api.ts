@@ -17,6 +17,31 @@ export async function fetchOptions(): Promise<Options> {
   return response.json()
 }
 
+export type SavedRecord = {
+  id: number
+  type: 'INCOME' | 'EXPENSE'
+  amount: number
+  occurredAt: string
+  memo: string
+  category: string | null
+  paymentMethod: string | null
+}
+
+export type Totals = { income: number; expense: number; balance: number }
+
+export type RecordList = { records: SavedRecord[]; totals: Totals }
+
+export type Order = 'desc' | 'asc'
+
+// A-07 기간 목록과 합계
+export async function fetchRecords(from: string, to: string, order: Order): Promise<RecordList> {
+  const response = await fetch(`/api/records?from=${from}&to=${to}&order=${order}`)
+  if (!response.ok) {
+    throw new Error(`A-07 failed: ${response.status}`)
+  }
+  return response.json()
+}
+
 export type NewRecord = {
   type: 'INCOME' | 'EXPENSE'
   amount: number

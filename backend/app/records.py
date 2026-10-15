@@ -2,7 +2,7 @@
 # 칸별 오류 코드는 API-SPEC.md 4절, 저장 형식은 DATA-MODEL.md 5절을 따릅니다.
 import re
 import sqlite3
-from datetime import datetime
+from datetime import date, datetime
 
 from app import clock
 from app.options import EXPENSE_CATEGORIES, INCOME_CATEGORIES, PAYMENT_METHODS
@@ -127,3 +127,55 @@ def create(conn: sqlite3.Connection, body: dict, now: datetime) -> dict:
     )
     conn.commit()
     return {"id": cursor.lastrowid, **record}
+
+
+# ---- 기간 목록과 합계 (API-SPEC.md A-07) ----
+
+ORDERS = ("desc", "asc")
+DATE_PATTERN = re.compile(r"[0-9]{4}-[0-9]{2}-[0-9]{2}")
+
+
+def _parse_date(value: str | None) -> date | None:
+    if value is None or not DATE_PATTERN.fullmatch(value):
+        return None
+    try:
+        return datetime.strptime(value, "%Y-%m-%d").date()
+    except ValueError:
+        # 없는 날짜(예: 2월 30일)도 형식이 틀린 것으로 봅니다. [AI 제안·채택] (P-15)
+        return None
+
+
+def is_valid_period(period_from: str | None, period_to: str | None) -> bool:
+    start, end = _parse_date(period_from), _parse_date(period_to)
+    # 시작일과 끝날이 같은 것은 됩니다.
+    return start is not None and end is not None and start <= end
+
+
+def list_with_totals(conn: sqlite3.Connection, period_from: str, period_to: str, order: str) -> dict:
+    """시작일 00:00부터 끝날 23:59까지의 기록과 합계. 합계는 읽은 목록으로 계산해 목록과 늘 맞습니다."""
+    direction = "DESC" if order == "desc" else "ASC"
+    rows = conn.execute(
+        "SELECT id, type, amount, occurred_at, memo, category, payment_method FROM records"
+        " WHERE occurred_at >= ? AND occurred_at <= ?"
+        f" ORDER BY occurred_at {direction}, created_at {direction}, id {direction}",
+        (f"{period_from} 00:00", f"{period_to} 23:59"),
+    ).fetchall()
+
+    found = [
+        {
+            "id": row[0],
+            "type": row[1],
+            "amount": row[2],
+            "occurredAt": row[3].replace(" ", "T"),
+            "memo": row[4],
+            "category": row[5],
+            "paymentMethod": row[6],
+        }
+        for row in rows
+    ]
+    income = sum(r["amount"] for r in found if r["type"] == "INCOME")
+    expense = sum(r["amount"] for r in found if r["type"] == "EXPENSE")
+    return {
+        "records": found,
+        "totals": {"income": income, "expense": expense, "balance": income - expense},
+    }

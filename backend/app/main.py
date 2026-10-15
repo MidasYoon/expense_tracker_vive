@@ -13,6 +13,20 @@ from app.options import EXPENSE_CATEGORIES, INCOME_CATEGORIES, PAYMENT_METHODS
 FRONTEND_DIST = db.PROJECT_ROOT / "frontend" / "dist"
 
 
+class FrontendFiles(StaticFiles):
+    """빌드한 화면 파일. index.html은 브라우저가 늘 서버에 새것인지 물어보게 합니다.
+
+    그러지 않으면 화면을 다시 빌드해도 브라우저가 저장해 둔 예전 index.html(예전 JS 파일을 가리킴)을 씁니다.
+    JS·CSS 파일은 빌드할 때마다 이름이 바뀌므로 그대로 둡니다.
+    """
+
+    async def get_response(self, path, scope):
+        response = await super().get_response(path, scope)
+        if response.headers.get("content-type", "").startswith("text/html"):
+            response.headers["Cache-Control"] = "no-cache"
+        return response
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     db.init_db()
@@ -35,6 +49,23 @@ def create_app(frontend_dist: Path = FRONTEND_DIST) -> FastAPI:
             "expenseCategories": _to_list(EXPENSE_CATEGORIES),
             "paymentMethods": _to_list(PAYMENT_METHODS),
         }
+
+    # A-07 기간 목록과 합계 (API-SPEC.md A-07)
+    @app.get("/api/records")
+    def list_records(request: Request) -> JSONResponse:
+        params = request.query_params
+        period_from, period_to = params.get("from"), params.get("to")
+        order = params.get("order", "desc")
+        if not records.is_valid_period(period_from, period_to):
+            return JSONResponse(status_code=400, content={"code": "INVALID_PERIOD"})
+        if order not in records.ORDERS:
+            return JSONResponse(status_code=400, content={"code": "INVALID_ORDER"})
+
+        conn = db.connect()
+        try:
+            return JSONResponse(content=records.list_with_totals(conn, period_from, period_to, order))
+        finally:
+            conn.close()
 
     # A-08 기록 적기 (API-SPEC.md A-08)
     @app.post("/api/records")
@@ -70,7 +101,7 @@ def create_app(frontend_dist: Path = FRONTEND_DIST) -> FastAPI:
     # 화면 파일은 API 다음에 붙여, /api/ 주소는 API가 먼저 받게 합니다.
     # 빌드하지 않아 폴더가 없으면 API만 켭니다.
     if frontend_dist.is_dir():
-        app.mount("/", StaticFiles(directory=frontend_dist, html=True), name="frontend")
+        app.mount("/", FrontendFiles(directory=frontend_dist, html=True), name="frontend")
 
     return app
 

@@ -37,3 +37,25 @@ body {
 button[aria-pressed='true'] {
   font-weight: bold;
 }
+
+/* S-05 합계: 남은 돈이 마이너스이면 빨간색 */
+.negative {
+  color: #c00;
+}
+
+/* S-05 목록: 메모는 줄을 바꿔 전부 보여 줍니다. 줄이거나 "…"로 자르지 않습니다. */
+.records {
+  list-style: none;
+  padding: 0;
+  max-width: 480px;
+}
+
+.record {
+  padding: 8px 0;
+  border-bottom: 1px solid #ddd;
+}
+
+.memo {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
