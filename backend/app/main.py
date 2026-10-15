@@ -1,4 +1,6 @@
 # 가계부 서버 (D-018). 127.0.0.1에서만 켭니다. (ARCHITECTURE.md 3절)
+import logging
+import sqlite3
 from contextlib import asynccontextmanager
 from pathlib import Path
 
@@ -8,6 +10,8 @@ from fastapi.staticfiles import StaticFiles
 
 from app import clock, db, records
 from app.options import EXPENSE_CATEGORIES, INCOME_CATEGORIES, PAYMENT_METHODS
+
+logger = logging.getLogger("uvicorn.error")
 
 # 빌드한 화면 파일 (npm run build). 화면과 API를 같은 주소에서 내보냅니다. (D-020)
 FRONTEND_DIST = db.PROJECT_ROOT / "frontend" / "dist"
@@ -29,8 +33,17 @@ class FrontendFiles(StaticFiles):
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    db.init_db()
+    # 데이터베이스를 열지 못해도 서버는 켭니다. 요청마다 다시 열어 보고, 못 열면 500을 돌려줍니다. [AI 제안·채택] (P-18)
+    try:
+        db.init_db()
+    except sqlite3.Error as error:
+        logger.warning("데이터베이스를 열지 못했습니다 (%s): %s", db.get_db_path(), error)
     yield
+
+
+async def internal_error(request: Request, exc: Exception) -> JSONResponse:
+    # 서버나 데이터베이스 오류. 사람이 읽는 문구는 넣지 않습니다. (API-SPEC.md 4절)
+    return JSONResponse(status_code=500, content={"code": "INTERNAL_ERROR"})
 
 
 def _to_list(items: list[tuple[str, str]]) -> list[dict[str, str]]:
@@ -40,6 +53,7 @@ def _to_list(items: list[tuple[str, str]]) -> list[dict[str, str]]:
 def create_app(frontend_dist: Path = FRONTEND_DIST) -> FastAPI:
     # API 설명 화면(/docs 등)은 PRD에 없는 기능이라 끕니다.
     app = FastAPI(lifespan=lifespan, docs_url=None, redoc_url=None, openapi_url=None)
+    app.add_exception_handler(Exception, internal_error)
 
     # A-10 분류·결제 수단 목록 (API-SPEC.md A-10)
     @app.get("/api/options")

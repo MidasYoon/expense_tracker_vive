@@ -36,8 +36,16 @@ afterEach(() => {
   vi.unstubAllGlobals()
 })
 
-function renderForm(onSaved = vi.fn()) {
-  render(<RecordForm options={OPTIONS} onSaved={onSaved} onCancel={vi.fn()} />)
+function renderForm(onSaved = vi.fn(), onFailure = vi.fn()) {
+  render(
+    <RecordForm
+      options={OPTIONS}
+      onSaved={onSaved}
+      onCancel={vi.fn()}
+      onSubmitStart={vi.fn()}
+      onFailure={onFailure}
+    />,
+  )
   return onSaved
 }
 
@@ -229,5 +237,51 @@ describe('저장', () => {
     click('저장')
 
     expect(fetchMock).toHaveBeenCalledTimes(1)
+  })
+})
+
+describe('저장 실패 (P-18)', () => {
+  it('T-911 연결 실패: 연결 실패를 알리고, 적던 내용을 남기고, 다시 보내지 않는다', async () => {
+    fetchMock.mockRejectedValue(new TypeError('Failed to fetch'))
+    const onFailure = vi.fn()
+    const onSaved = renderForm(vi.fn(), onFailure)
+    fillValid()
+
+    click('저장')
+
+    await vi.waitFor(() => expect(onFailure).toHaveBeenCalledWith('connection'))
+    expect(onSaved).not.toHaveBeenCalled()
+    expect(screen.getByRole('dialog')).toBeInTheDocument()
+    expect(input('금액').value).toBe('12000')
+    expect(input('메모').value).toBe('점심')
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+    expect(screen.getByRole('button', { name: '저장' })).toBeEnabled()
+  })
+
+  it.each([415, 500])('%d: 그 밖의 서버 오류를 알리고 적던 내용을 남긴다', async (status) => {
+    fetchMock.mockResolvedValue({ status, json: async () => ({ code: 'X' }) })
+    const onFailure = vi.fn()
+    renderForm(vi.fn(), onFailure)
+    fillValid()
+
+    click('저장')
+
+    await vi.waitFor(() => expect(onFailure).toHaveBeenCalledWith('server'))
+    expect(input('메모').value).toBe('점심')
+  })
+
+  it('VALIDATION_FAILED는 칸 아래에 알리고 화면 위쪽 실패 알림은 부르지 않는다', async () => {
+    fetchMock.mockResolvedValue({
+      status: 400,
+      json: async () => ({ code: 'VALIDATION_FAILED', fieldErrors: [{ field: 'memo', code: 'TOO_LONG' }] }),
+    })
+    const onFailure = vi.fn()
+    renderForm(vi.fn(), onFailure)
+    fillValid()
+
+    click('저장')
+
+    expect(await screen.findByText(MESSAGES.saveFailed)).toBeInTheDocument()
+    expect(onFailure).not.toHaveBeenCalled()
   })
 })

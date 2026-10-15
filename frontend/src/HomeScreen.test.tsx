@@ -15,7 +15,6 @@ const noop = () => {}
 function renderHome(list: RecordList | null) {
   render(
     <HomeScreen
-      notice={null}
       view={{ mode: 'month', month: { year: 2026, month: 10 } }}
       period={{ from: '2026-10-01', to: '2026-10-31' }}
       onPrevMonth={noop}

@@ -6,9 +6,8 @@ import { isStartAfterEnd, monthLabel, PERIOD_ERROR, type Month, type Period } fr
 
 export type View = { mode: 'month'; month: Month } | { mode: 'custom'; period: Period }
 
+// 화면 위쪽 알림("저장했습니다.", 실패 알림)은 창보다 위에 보이도록 App이 그립니다.
 type Props = {
-  // 화면 위쪽에 보여 줄 알림 (예: "저장했습니다.")
-  notice: string | null
   view: View
   period: Period
   onPrevMonth: () => void
@@ -90,13 +89,11 @@ function RecordItem({ record, options, onDelete }: RecordItemProps) {
 }
 
 function HomeScreen(props: Props) {
-  const { notice, view, period, list, options, order } = props
+  const { view, period, list, options, order } = props
   const totals = list?.totals
 
   return (
     <main>
-      {notice && <p role="status">{notice}</p>}
-
       <section aria-label="기간 고르기">
         <div>
           <button type="button" aria-pressed={view.mode === 'month'} onClick={props.onMonthMode}>

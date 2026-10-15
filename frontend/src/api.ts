@@ -1,4 +1,6 @@
 // 화면과 서버가 주고받는 요청 (API-SPEC.md)
+// 서버에 연결하지 못하면 fetch가 TypeError를 던집니다. 응답이 왔지만 실패면 Error를 던지거나 결과로 돌려줍니다.
+// (실패 종류 나누기: messages.ts의 failureOf)
 
 export type Option = { code: string; name: string }
 
@@ -42,10 +44,12 @@ export async function fetchRecords(from: string, to: string, order: Order): Prom
   return response.json()
 }
 
-// A-09 기록 지우기. 연결 실패는 fetch가 오류를 던집니다.
-export async function deleteRecord(id: number): Promise<'deleted' | 'failed'> {
+// A-09 기록 지우기. 404는 다른 탭에서 이미 지운 기록입니다. (API-SPEC.md A-09)
+export async function deleteRecord(id: number): Promise<'deleted' | 'notFound' | 'failed'> {
   const response = await fetch(`/api/records/${id}`, { method: 'DELETE' })
-  return response.status === 204 ? 'deleted' : 'failed'
+  if (response.status === 204) return 'deleted'
+  if (response.status === 404) return 'notFound'
+  return 'failed'
 }
 
 export type NewRecord = {

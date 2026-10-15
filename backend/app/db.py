@@ -29,15 +29,21 @@ def get_db_path() -> Path:
 
 
 def connect() -> sqlite3.Connection:
-    # 폴더는 만들지 않습니다. 없는 폴더를 가리키면 오류가 납니다. (TEST-PLAN.md T-921)
-    return sqlite3.connect(get_db_path())
+    """데이터베이스를 열고, 표가 없으면 만듭니다.
 
-
-def init_db() -> None:
-    """표가 없으면 만듭니다."""
-    conn = connect()
+    폴더는 만들지 않습니다. 없는 폴더를 가리키면 sqlite3 오류가 나고, 서버는 500을 돌려줍니다. (TEST-PLAN.md T-921)
+    요청마다 표를 확인하므로, 서버를 켤 때 열지 못했던 파일도 나중에 열 수 있게 되면 그대로 씁니다.
+    """
+    conn = sqlite3.connect(get_db_path())
     try:
         conn.execute(CREATE_RECORDS_TABLE)
         conn.commit()
-    finally:
+    except sqlite3.Error:
         conn.close()
+        raise
+    return conn
+
+
+def init_db() -> None:
+    """서버를 켤 때 파일과 표를 미리 만듭니다."""
+    connect().close()

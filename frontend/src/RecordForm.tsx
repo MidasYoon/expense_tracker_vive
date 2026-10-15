@@ -1,6 +1,7 @@
 // S-06 기록 적기 (SCREEN-SPEC.md S-06). S-05 위에 뜨는 창입니다.
 import { useState } from 'react'
 import { createRecord, type Options } from './api.ts'
+import { failureOf, type Failure } from './messages.ts'
 import {
   countChars,
   limitChars,
@@ -19,6 +20,10 @@ type Props = {
   options: Options | null
   onSaved: () => void
   onCancel: () => void
+  // 서버로 보내기 직전. 이전 실패 알림을 지웁니다.
+  onSubmitStart: () => void
+  // 연결 실패나 그 밖의 서버 오류(415, 500 등). 알림은 화면 위쪽에 보이고, 이 창과 적던 내용은 남겨 둡니다.
+  onFailure: (failure: Failure) => void
 }
 
 function initialValues(): RecordFormValues {
@@ -30,7 +35,7 @@ function FieldError({ message }: { message?: string }) {
   return message ? <p className="field-error">{message}</p> : null
 }
 
-function RecordForm({ options, onSaved, onCancel }: Props) {
+function RecordForm({ options, onSaved, onCancel, onSubmitStart, onFailure }: Props) {
   const [values, setValues] = useState<RecordFormValues>(initialValues)
   const [errors, setErrors] = useState<FieldErrors>({})
   const [saving, setSaving] = useState(false)
@@ -55,6 +60,7 @@ function RecordForm({ options, onSaved, onCancel }: Props) {
     if (Object.keys(formErrors).length > 0) return
 
     setSaving(true)
+    onSubmitStart()
     try {
       const result = await createRecord({
         type: values.type as RecordType,
@@ -74,10 +80,12 @@ function RecordForm({ options, onSaved, onCancel }: Props) {
           serverErrors[field as FieldName] = serverFieldMessage(field, code)
         }
         setErrors(serverErrors)
+        return
       }
-      // 연결 실패와 그 밖의 서버 오류 알림은 P-18에서 더합니다. 적던 내용은 남겨 둡니다.
-    } catch {
-      // 위와 같음 (P-18)
+      onFailure('server')
+    } catch (error) {
+      // 자동으로 다시 보내지 않습니다. 사용자가 다시 [저장]합니다. (ARCHITECTURE.md 6절)
+      onFailure(failureOf(error))
     } finally {
       setSaving(false)
     }

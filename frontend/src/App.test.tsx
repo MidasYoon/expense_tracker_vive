@@ -5,6 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { RecordList, SavedRecord } from './api.ts'
 import App from './App.tsx'
 import { EMPTY_MESSAGE } from './HomeScreen.tsx'
+import { NOTICES } from './messages.ts'
 import { PERIOD_ERROR } from './period.ts'
 import { MESSAGES } from './recordRules.ts'
 
@@ -319,13 +320,133 @@ describe('지우기 (P-17)', () => {
     expect(deleteRequests()).toHaveLength(1)
   })
 
-  it('실패하면(예: 404) 알림 없이 창을 열어 둔다 (알림은 P-18)', async () => {
+  it('T-901 404이면 창을 닫고 위쪽에 "이미 지워진 기록입니다."를 보이고 A-07을 다시 부른다 (P-18)', async () => {
     await renderWithRecord(() => ({ status: 404 }))
+    const before = listRequests().length
     click('지우기')
 
     click('예')
 
-    await waitFor(() => expect(screen.getByRole('button', { name: '예' })).toBeEnabled())
+    expect(await screen.findByRole('alert')).toHaveTextContent(NOTICES.alreadyDeleted)
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    await waitFor(() => expect(listRequests()).toHaveLength(before + 1))
+    // 저절로 다시 불러와도 알림은 남아 있음
+    expect(screen.getByRole('alert')).toHaveTextContent(NOTICES.alreadyDeleted)
+  })
+
+  it('연결 실패나 500이면 창을 열어 두고 위쪽에 알린다. 자동으로 다시 보내지 않는다 (P-18 E)', async () => {
+    await renderWithRecord(() => Promise.reject(new TypeError('Failed to fetch')))
+    click('지우기')
+
+    click('예')
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(NOTICES.connectionFailed)
     expect(screen.getByRole('dialog')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '예' })).toBeEnabled()
+    expect(deleteRequests()).toHaveLength(1)
+  })
+
+  it('500이면 그 밖의 서버 오류 문구', async () => {
+    await renderWithRecord(() => ({ status: 500 }))
+    click('지우기')
+
+    click('예')
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(NOTICES.requestFailed)
+    expect(screen.getByRole('dialog')).toBeInTheDocument()
+  })
+})
+
+describe('실패 알림 (P-18)', () => {
+  const stubFailing = (handlers: {
+    options?: () => Promise<unknown>
+    list?: (url: string) => Promise<unknown>
+    create?: () => Promise<unknown>
+  }) => {
+    fetchMock = vi.fn(async (url: string, init?: RequestInit) => {
+      if (url === '/api/options') {
+        return handlers.options ? handlers.options() : { ok: true, status: 200, json: async () => OPTIONS }
+      }
+      if (init?.method === 'POST') {
+        return handlers.create ? handlers.create() : { ok: true, status: 201, json: async () => ({}) }
+      }
+      return handlers.list ? handlers.list(url) : { ok: true, status: 200, json: async () => EMPTY }
+    })
+    vi.stubGlobal('fetch', fetchMock)
+  }
+  const connectionFailure = () => Promise.reject(new TypeError('Failed to fetch'))
+  const status = (code: number) => async () => ({ ok: false, status: code, json: async () => ({ code: 'X' }) })
+
+  it('A-10 연결 실패: 위쪽에 연결 실패 알림', async () => {
+    stubFailing({ options: connectionFailure })
+
+    render(<App />)
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(NOTICES.connectionFailed)
+  })
+
+  it('A-07 연결 실패: 알림을 보이고 목록과 합계를 비운다', async () => {
+    stubFailing({ list: connectionFailure })
+
+    render(<App />)
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(NOTICES.connectionFailed)
+    expect(screen.queryByText(EMPTY_MESSAGE)).not.toBeInTheDocument()
+    expect(screen.queryByText('0원')).not.toBeInTheDocument()
+  })
+
+  it.each([
+    [500, 'INTERNAL_ERROR'],
+    [400, 'INVALID_PERIOD'],
+    [400, 'INVALID_ORDER'],
+  ])('T-922 A-07이 %d %s: 그 밖의 서버 오류 문구', async (code) => {
+    stubFailing({ list: status(code) })
+
+    render(<App />)
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(NOTICES.requestFailed)
+  })
+
+  it('T-911 저장 중 연결 실패: 위쪽에 알림, S-06과 적던 내용은 남는다', async () => {
+    stubFailing({ create: connectionFailure })
+    await renderApp()
+    click('+ 기록 적기')
+    click('지출')
+    change('금액', '12000')
+    change('메모', '점심')
+
+    click('저장')
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(NOTICES.connectionFailed)
+    expect(screen.getByRole('dialog')).toBeInTheDocument()
+    expect((screen.getByLabelText('메모') as HTMLInputElement).value).toBe('점심')
+  })
+
+  it('저장 중 415: 그 밖의 서버 오류 문구', async () => {
+    stubFailing({ create: status(415) })
+    await renderApp()
+    click('+ 기록 적기')
+    click('지출')
+    change('금액', '12000')
+    change('메모', '점심')
+
+    click('저장')
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(NOTICES.requestFailed)
+  })
+
+  it('사용자가 다시 요청을 보내면(예: 다음 달) 실패 알림을 지운다', async () => {
+    let fail = true
+    stubFailing({
+      list: async () => (fail ? connectionFailure() : { ok: true, status: 200, json: async () => EMPTY }),
+    })
+    render(<App />)
+    expect(await screen.findByRole('alert')).toBeInTheDocument()
+
+    fail = false
+    click('다음 달')
+
+    await waitFor(() => expect(screen.queryByRole('alert')).not.toBeInTheDocument())
+    expect(await screen.findByText(EMPTY_MESSAGE)).toBeInTheDocument()
   })
 })
